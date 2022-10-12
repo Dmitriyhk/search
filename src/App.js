@@ -1,25 +1,34 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import { getCompaniesByName } from "./api/companiesApi";
+import "./App.scss";
+import Hints from "./components/Hints";
+import Search from "./components/Search";
+import { useFetching } from "./hooks/useFetching";
 
-function App() {
+const App = () => {
+  const [searchValue, setSearchValue] = useState("");
+  const [companiesData, setCompaniesData] = useState([]);
+  const [fetchCompanyByName, isLoading, isError] = useFetching(async (name) => {
+    const response = await getCompaniesByName(name);
+    setCompaniesData(response.data);
+  });
+
+  useEffect(() => {
+    if (searchValue.trim().length > 0) {
+      fetchCompanyByName(searchValue);
+    }
+  }, [searchValue]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <div className="search_wrapper">
+        <Search value={searchValue} setValue={setSearchValue} />
+        {searchValue.trim().length > 0 && (
+          <Hints isError={isError} isLoading={isLoading} data={companiesData} />
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default App;
